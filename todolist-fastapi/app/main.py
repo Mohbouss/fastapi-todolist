@@ -6,7 +6,6 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor  
 import time
-app = FastAPI()
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -54,19 +53,19 @@ while True:
 
 ##read tasks
 @app.get('/tasks')
-def read_tasks():
+def get_all_tasks():
  cursor.execute("""Select * from tasks order by id""")
  tasks=cursor.fetchall()
  return list(tasks)  
 ##read task with specific id 
 @app.get('/tasks/{id}/state')
-def read_tasks(id :int):
+def get_task_state(id :int):
  cursor.execute("""Select completed from tasks where id = %s  order by id """,(str(id),))
  state=cursor.fetchone()
  return state  
 ##create tasks
 @app.post('/tasks', status_code=status.HTTP_201_CREATED)
-def create_tasks(task: Post):
+def create_task(task: Post):
     cursor.execute("""insert into tasks(description,user_id) values(%s,%s)returning * """,(task.description,task.UserId))
     new_task= cursor.fetchone()
     conn.commit()
@@ -74,7 +73,7 @@ def create_tasks(task: Post):
 
 ##update task description
 @app.put('/tasks/{id}/description',status_code=status.HTTP_200_OK)
-def update_tasks(id: int,task:UpdateTaskDescription):
+def update_task_description(id: int,task:UpdateTaskDescription):
     cursor.execute("""update tasks set description = %s where id = %s returning * """,(task.description,str(id),))
     updated_task  =cursor.fetchone()
     if not updated_task :
@@ -83,7 +82,7 @@ def update_tasks(id: int,task:UpdateTaskDescription):
     return updated_task
 ##update task state
 @app.put('/tasks/{id}/state',status_code=status.HTTP_200_OK)
-def update_tasks(id: int,task:UpdateTaskState):
+def update_task_state(id: int,task:UpdateTaskState):
     cursor.execute("""update tasks set completed = %s where id = %s returning *  """,(task.completed,str(id),))
     updated_task  =cursor.fetchone()
     if not updated_task :
@@ -106,7 +105,7 @@ def delete_task(id: int):
 
 ## read users
 @app.get('/users')
-def  read_user():
+def  get_all_users():
    cursor.execute("select * from users order by id  ")
    readed_users=cursor.fetchall()
    return  readed_users
@@ -138,3 +137,5 @@ def get_task_specified_user(id : int ):
     cursor.execute("""select * from tasks where user_id =%s order by id  """,(str(id),))
     tasks= cursor.fetchall()
     return tasks
+
+    
